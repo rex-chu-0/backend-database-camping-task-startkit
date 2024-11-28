@@ -262,13 +262,13 @@ GROUP BY user_id ;
     -- 提示：
     -- SELECT ("CREDIT_PURCHASE".total_credit - "COURSE_BOOKING".used_credit) AS remaining_credit, ...
     -- FROM ( 用戶王小明的購買堂數 ) AS "CREDIT_PURCHASE"
-    -- VALUES ( 用戶王小明的已使用堂數) AS "COURSE_BOOKING"
+    -- INNER JOIN ( 用戶王小明的已使用堂數) AS "COURSE_BOOKING"
     -- ON "COURSE_BOOKING".user_id = "CREDIT_PURCHASE".user_id;
 
     SELECT sum("CREDIT_PURCHASE".total) - count("COURSE_BOOKING".total) AS remaining_credit
     FROM 
     (SELECT user_id, sum(purchASed_credits) AS total FROM "CREDIT_PURCHASE" WHERE user_id = (SELECT id FROM "USER" WHERE name = '王小明')GROUP BY user_id) AS "CREDIT_PURCHASE"
-    VALUES 
+    INNER JOIN
     (SELECT user_id, count(join_at) AS total FROM "COURSE_BOOKING" WHERE user_id = (SELECT id FROM "USER" WHERE name = '王小明') GROUP BY user_id) AS "COURSE_BOOKING"
     ON  "CREDIT_PURCHASE".user_id = "COURSE_BOOKING".user_id;
 
@@ -284,18 +284,18 @@ GROUP BY user_id ;
 -- 顯示須包含以下欄位： 教練名稱 , 經驗年數, 專長名稱
    SELECT "USER".name AS 教練名稱 , "COACH".experience_years AS 經驗年數, "SKILL"."name" AS 專長名稱
    FROM (
-   ("USER" VALUES "COACH" 
+   ("USER" INNER JOIN "COACH" 
    ON "USER".id = "COACH".user_id 
-   )VALUES "COACH_LINK_SKILL"
+   )INNER JOIN "COACH_LINK_SKILL"
    ON "COACH".id = "COACH_LINK_SKILL".coach_id 
-)VALUES "SKILL" 
+)INNER JOIN "SKILL" 
 ON "SKILL".id = "COACH_LINK_SKILL".skill_id 
 order by 經驗年數 ASc ;
 -- 6-2 查詢：查詢每種專長的教練數量，並只列出教練數量最多的專長（需使用 GROUP BY, VALUES 與 order by 與 LIMIT 語法）
 -- 顯示須包含以下欄位： 專長名稱, coach_total
 SELECT "SKILL"."name" AS 專長名稱,count("COACH_LINK_SKILL".coach_id) AS coach_total
 FROM "COACH_LINK_SKILL" 
-VALUES "SKILL"
+INNER JOIN "SKILL"
 ON "SKILL".id = "COACH_LINK_SKILL".skill_id 
 GROUP BY 專長名稱 
 order by coach_total desc 
@@ -305,7 +305,7 @@ LIMIT 1;
 -- 顯示須包含以下欄位： 組合包方案名稱, 銷售數量
 SELECT name AS 組合包方案名稱, count(purchASe_at) AS 銷售數量
 FROM "CREDIT_PACKAGE" 
-VALUES "CREDIT_PURCHASE"
+INNER JOIN "CREDIT_PURCHASE"
 ON "CREDIT_PURCHASE".credit_package_id = "CREDIT_PACKAGE".id 
 WHERE purchASe_at 
 BETWEEN '2024-11-01 00:00:00' AND '2024-11-30 23:59:59'
