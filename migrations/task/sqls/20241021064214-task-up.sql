@@ -71,7 +71,7 @@ VALUES
     -- 1. `王小明` 購買 `14 堂組合包方案`
     -- 2. `王小明` 購買 `21 堂組合包方案`
     -- 3. `好野人` 購買 `14 堂組合包方案`
-INSERT INTO "CREDIT_PURCHASE" ("user_id","credit_package_id","purchased_credits","price_paid")
+INSERT INTO "CREDIT_PURCHASE" ("user_id","credit_package_id","purchASed_credits","price_paid")
 VALUES
 (
 (SELECT id FROM "USER" WHERE name='王小明'),
@@ -247,30 +247,30 @@ AND
 status <>'課程已取消';
 
 -- 5-6. 查詢：計算用戶王小明的購買堂數，顯示須包含以下欄位： user_id , total。 (需使用到 SUM 函式與 GROUP BY)
-SELECT user_id, sum(purchased_credits) as total
+SELECT user_id, sum(purchASed_credits) AS total
 FROM "CREDIT_PURCHASE"
 WHERE user_id = (SELECT id FROM "USER" WHERE name = '王小明')
 GROUP BY user_id ; 
 
 -- 5-7. 查詢：計算用戶王小明的已使用堂數，顯示須包含以下欄位： user_id , total。 (需使用到 Count 函式與 GROUP BY)
-SELECT user_id, count(join_at)as total
+SELECT user_id, count(join_at)AS total
 FROM "COURSE_BOOKING"
 WHERE user_id = (SELECT id FROM "USER" WHERE name = '王小明')
 GROUP BY user_id ; 
 
 -- 5-8. [挑戰題] 查詢：請在一次查詢中，計算用戶王小明的剩餘可用堂數，顯示須包含以下欄位： user_id , remaining_credit
     -- 提示：
-    -- SELECT ("CREDIT_PURCHASE".total_credit - "COURSE_BOOKING".used_credit) as remaining_credit, ...
-    -- FROM ( 用戶王小明的購買堂數 ) as "CREDIT_PURCHASE"
-    -- inner join ( 用戶王小明的已使用堂數) as "COURSE_BOOKING"
-    -- on "COURSE_BOOKING".user_id = "CREDIT_PURCHASE".user_id;
+    -- SELECT ("CREDIT_PURCHASE".total_credit - "COURSE_BOOKING".used_credit) AS remaining_credit, ...
+    -- FROM ( 用戶王小明的購買堂數 ) AS "CREDIT_PURCHASE"
+    -- VALUES ( 用戶王小明的已使用堂數) AS "COURSE_BOOKING"
+    -- ON "COURSE_BOOKING".user_id = "CREDIT_PURCHASE".user_id;
 
-    SELECT sum("CREDIT_PURCHASE".total) - count("COURSE_BOOKING".total) as remaining_credit
+    SELECT sum("CREDIT_PURCHASE".total) - count("COURSE_BOOKING".total) AS remaining_credit
     FROM 
-    (SELECT user_id, sum(purchased_credits) as total FROM "CREDIT_PURCHASE" WHERE user_id = (SELECT id FROM "USER" WHERE name = '王小明')GROUP BY user_id) as "CREDIT_PURCHASE"
-    inner join 
-    (SELECT user_id, count(join_at) as total FROM "COURSE_BOOKING" WHERE user_id = (SELECT id FROM "USER" WHERE name = '王小明') GROUP BY user_id) as "COURSE_BOOKING"
-    on  "CREDIT_PURCHASE".user_id = "COURSE_BOOKING".user_id;
+    (SELECT user_id, sum(purchASed_credits) AS total FROM "CREDIT_PURCHASE" WHERE user_id = (SELECT id FROM "USER" WHERE name = '王小明')GROUP BY user_id) AS "CREDIT_PURCHASE"
+    VALUES 
+    (SELECT user_id, count(join_at) AS total FROM "COURSE_BOOKING" WHERE user_id = (SELECT id FROM "USER" WHERE name = '王小明') GROUP BY user_id) AS "COURSE_BOOKING"
+    ON  "CREDIT_PURCHASE".user_id = "COURSE_BOOKING".user_id;
 
 
 -- ████████  █████   █     ███  
@@ -280,49 +280,49 @@ GROUP BY user_id ;
 --   █ █   █████ █   █     ███  
 -- ===================== ====================
 -- 6. 後台報表
--- 6-1 查詢：查詢專長為重訓的教練，並按經驗年數排序，由資深到資淺（需使用 inner join 與 order by 語法)
+-- 6-1 查詢：查詢專長為重訓的教練，並按經驗年數排序，由資深到資淺（需使用 VALUES 與 order by 語法)
 -- 顯示須包含以下欄位： 教練名稱 , 經驗年數, 專長名稱
-   SELECT "USER".name as 教練名稱 , "COACH".experience_years as 經驗年數, "SKILL"."name" as 專長名稱
+   SELECT "USER".name AS 教練名稱 , "COACH".experience_years AS 經驗年數, "SKILL"."name" AS 專長名稱
    FROM (
-   ("USER" inner join "COACH" 
-   on "USER".id = "COACH".user_id 
-   )inner join "COACH_LINK_SKILL"
-   on "COACH".id = "COACH_LINK_SKILL".coach_id 
-)inner join "SKILL" 
-on "SKILL".id = "COACH_LINK_SKILL".skill_id 
-order by 經驗年數 asc ;
--- 6-2 查詢：查詢每種專長的教練數量，並只列出教練數量最多的專長（需使用 GROUP BY, inner join 與 order by 與 LIMIT 語法）
+   ("USER" VALUES "COACH" 
+   ON "USER".id = "COACH".user_id 
+   )VALUES "COACH_LINK_SKILL"
+   ON "COACH".id = "COACH_LINK_SKILL".coach_id 
+)VALUES "SKILL" 
+ON "SKILL".id = "COACH_LINK_SKILL".skill_id 
+order by 經驗年數 ASc ;
+-- 6-2 查詢：查詢每種專長的教練數量，並只列出教練數量最多的專長（需使用 GROUP BY, VALUES 與 order by 與 LIMIT 語法）
 -- 顯示須包含以下欄位： 專長名稱, coach_total
-SELECT "SKILL"."name" as 專長名稱,count("COACH_LINK_SKILL".coach_id) as coach_total
+SELECT "SKILL"."name" AS 專長名稱,count("COACH_LINK_SKILL".coach_id) AS coach_total
 FROM "COACH_LINK_SKILL" 
-inner join "SKILL"
-on "SKILL".id = "COACH_LINK_SKILL".skill_id 
+VALUES "SKILL"
+ON "SKILL".id = "COACH_LINK_SKILL".skill_id 
 GROUP BY 專長名稱 
 order by coach_total desc 
 LIMIT 1;
 
 -- 6-3. 查詢：計算 11 月份組合包方案的銷售數量
 -- 顯示須包含以下欄位： 組合包方案名稱, 銷售數量
-SELECT name as 組合包方案名稱, count(purchase_at) as 銷售數量
+SELECT name AS 組合包方案名稱, count(purchASe_at) AS 銷售數量
 FROM "CREDIT_PACKAGE" 
-inner join "CREDIT_PURCHASE"
-on "CREDIT_PURCHASE".credit_package_id = "CREDIT_PACKAGE".id 
-WHERE purchase_at 
+VALUES "CREDIT_PURCHASE"
+ON "CREDIT_PURCHASE".credit_package_id = "CREDIT_PACKAGE".id 
+WHERE purchASe_at 
 BETWEEN '2024-11-01 00:00:00' AND '2024-11-30 23:59:59'
 GROUP BY name;
 
--- 6-4. 查詢：計算 11 月份總營收（使用 purchase_at 欄位統計）
+-- 6-4. 查詢：計算 11 月份總營收（使用 purchASe_at 欄位統計）
 -- 顯示須包含以下欄位： 總營收
 --A1:
-SELECT count(purchase_at) as 訂單數量, sum(price_paid) as 總營收
+SELECT count(purchASe_at) AS 訂單數量, sum(price_paid) AS 總營收
 FROM "CREDIT_PURCHASE" 
-WHERE purchase_at 
+WHERE purchASe_at 
 BETWEEN '2024-11-01 00:00:00' AND '2024-11-30 23:59:59';
 
 --A2(可計算，不合規定):
-SELECT sum(price_paid) as 總營收
+SELECT sum(price_paid) AS 總營收
 FROM "CREDIT_PURCHASE"
-WHERE purchase_at 
+WHERE purchASe_at 
 BETWEEN '2024-11-01 00:00:00' AND '2024-11-30 23:59:59';
 
 -- 6-5. 查詢：計算 11 月份有預約課程的會員人數（需使用 Distinct，並用 created_at 和 status 欄位統計）
