@@ -71,7 +71,7 @@ VALUES
     -- 1. `王小明` 購買 `14 堂組合包方案`
     -- 2. `王小明` 購買 `21 堂組合包方案`
     -- 3. `好野人` 購買 `14 堂組合包方案`
-INSERT INTO "CREDIT_PURCHASE" ("user_id","credit_package_id","purchASed_credits","price_paid")
+INSERT INTO "CREDIT_PURCHASE" ("user_id","credit_package_id","purchased_credits","price_paid")
 VALUES
 (
 (SELECT id FROM "USER" WHERE name='王小明'),
@@ -247,7 +247,7 @@ AND
 status <>'課程已取消';
 
 -- 5-6. 查詢：計算用戶王小明的購買堂數，顯示須包含以下欄位： user_id , total。 (需使用到 SUM 函式與 GROUP BY)
-SELECT user_id, sum(purchASed_credits) AS total
+SELECT user_id, sum(purchased_credits) AS total
 FROM "CREDIT_PURCHASE"
 WHERE user_id = (SELECT id FROM "USER" WHERE name = '王小明')
 GROUP BY user_id ; 
@@ -267,7 +267,7 @@ GROUP BY user_id ;
 
     SELECT sum("CREDIT_PURCHASE".total) - count("COURSE_BOOKING".total) AS remaining_credit
     FROM 
-    (SELECT user_id, sum(purchASed_credits) AS total FROM "CREDIT_PURCHASE" WHERE user_id = (SELECT id FROM "USER" WHERE name = '王小明')GROUP BY user_id) AS "CREDIT_PURCHASE"
+    (SELECT user_id, sum(purchased_credits) AS total FROM "CREDIT_PURCHASE" WHERE user_id = (SELECT id FROM "USER" WHERE name = '王小明')GROUP BY user_id) AS "CREDIT_PURCHASE"
     INNER JOIN
     (SELECT user_id, count(join_at) AS total FROM "COURSE_BOOKING" WHERE user_id = (SELECT id FROM "USER" WHERE name = '王小明') GROUP BY user_id) AS "COURSE_BOOKING"
     ON  "CREDIT_PURCHASE".user_id = "COURSE_BOOKING".user_id;
