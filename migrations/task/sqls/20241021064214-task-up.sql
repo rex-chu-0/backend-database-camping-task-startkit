@@ -86,7 +86,7 @@ VALUES
 (SELECT price FROM "CREDIT_PACKAGE" WHERE name='21 堂組合包方案')
 ),
 (
-(SELECT id FROM "USER" WHERE name='王小明'),
+(SELECT id FROM "USER" WHERE name='好野人'),
 (SELECT id FROM "CREDIT_PACKAGE" WHERE name='14 堂組合包方案'),
 (SELECT credit_amount FROM "CREDIT_PACKAGE" WHERE name='14 堂組合包方案'),
 (SELECT price FROM "CREDIT_PACKAGE" WHERE name='14 堂組合包方案')
@@ -158,6 +158,17 @@ where user_id = (select id from "USER" where email='starplatinum@hexschooltest.i
     -- 5. 授課結束時間`end_at`設定為2024-11-25 16:00:00
     -- 6. 最大授課人數`max_participants` 設定為10
     -- 7. 授課連結設定`meeting_url`為 https://test-meeting.test.io
+insert into "COURSE" (user_id,skill_id,name,start_at ,end_at ,max_participants,meeting_url)
+values 
+(
+(select id from "USER" where name='李燕容' and role ='COACH'),
+(select id from "SKILL" where name = '重訓'),
+'重訓基礎課',
+'2024-11-25 14:00:00',
+'2024-11-25 16:00:00',
+10,
+'https://test-meeting.test.io'
+);
 
 
 -- ████████  █████   █    █████ 
@@ -173,29 +184,79 @@ where user_id = (select id from "USER" where email='starplatinum@hexschooltest.i
         -- 1. 預約人設為`王小明`
         -- 2. 預約時間`booking_at` 設為2024-11-24 16:00:00
         -- 3. 狀態`status` 設定為即將授課
+insert into "COURSE_BOOKING" (user_id,course_id,booking_at,status)
+values
+(
+(select id from "USER" where name = '王小明'),
+(select id from "COURSE" where user_id = (select id from "USER" where name ='李燕容')),
+'2024-11-24 16:00:00',
+'即將授課'
+);
+
     -- 2. 新增： `好野人` 預約 `李燕容` 的課程
         -- 1. 預約人設為 `好野人`
         -- 2. 預約時間`booking_at` 設為2024-11-24 16:00:00
         -- 3. 狀態`status` 設定為即將授課
 
+insert into "COURSE_BOOKING" (user_id,course_id,booking_at,status)
+values
+(
+(select id from "USER" where name = '好野人'),
+(select id from "COURSE" where user_id = (select id from "USER" where name ='李燕容')),
+'2024-11-24 16:00:00',
+'即將授課'
+);
+
 -- 5-2. 修改：`王小明`取消預約 `李燕容` 的課程，請在`COURSE_BOOKING`更新該筆預約資料：
     -- 1. 取消預約時間`cancelled_at` 設為2024-11-24 17:00:00
     -- 2. 狀態`status` 設定為課程已取消
+update "COURSE_BOOKING" 
+set cancelled_at = '2024-11-24 17:00:00' , status = '課程已取消'
+where  
+user_id = (select id from "USER" where name = '王小明')
+AND
+course_id = (select id from "COURSE" where user_id = (select id from "USER" where name ='李燕容'));
 
 -- 5-3. 新增：`王小明`再次預約 `李燕容`   的課程，請在`COURSE_BOOKING`新增一筆資料：
     -- 1. 預約人設為`王小明`
     -- 2. 預約時間`booking_at` 設為2024-11-24 17:10:25
     -- 3. 狀態`status` 設定為即將授課
+insert into "COURSE_BOOKING" (user_id,course_id,booking_at,status)
+values
+(
+(select id from "USER" where name = '王小明'),
+(select id from "COURSE" where user_id = (select id from "USER" where name ='李燕容')),
+'2024-11-27 17:10:25',
+'即將授課'
+);
 
 -- 5-4. 查詢：取得王小明所有的預約紀錄，包含取消預約的紀錄
+select * from "COURSE_BOOKING"
+where user_id = (select id from "USER" where name = '王小明');
 
 -- 5-5. 修改：`王小明` 現在已經加入直播室了，請在`COURSE_BOOKING`更新該筆預約資料（請注意，不要更新到已經取消的紀錄）：
     -- 1. 請在該筆預約記錄他的加入直播室時間 `join_at` 設為2024-11-25 14:01:59
     -- 2. 狀態`status` 設定為上課中
+update "COURSE_BOOKING" 
+set join_at = '2024-11-25 14:01:59' , status = '上課中'
+where  
+user_id = (select id from "USER" where name = '王小明')
+AND
+course_id = (select id from "COURSE" where user_id = (select id from "USER" where name ='李燕容'))
+AND
+status <>'課程已取消';
 
 -- 5-6. 查詢：計算用戶王小明的購買堂數，顯示須包含以下欄位： user_id , total。 (需使用到 SUM 函式與 Group By)
+select user_id, sum(purchased_credits) as total
+from "CREDIT_PURCHASE"
+where user_id = (select id from "USER" where name = '王小明')
+group by user_id ; 
 
 -- 5-7. 查詢：計算用戶王小明的已使用堂數，顯示須包含以下欄位： user_id , total。 (需使用到 Count 函式與 Group By)
+select user_id, count(join_at)as total
+from "COURSE_BOOKING"
+where user_id = (select id from "USER" where name = '王小明')
+group by user_id ; 
 
 -- 5-8. [挑戰題] 查詢：請在一次查詢中，計算用戶王小明的剩餘可用堂數，顯示須包含以下欄位： user_id , remaining_credit
     -- 提示：
@@ -203,6 +264,13 @@ where user_id = (select id from "USER" where email='starplatinum@hexschooltest.i
     -- FROM ( 用戶王小明的購買堂數 ) as "CREDIT_PURCHASE"
     -- inner join ( 用戶王小明的已使用堂數) as "COURSE_BOOKING"
     -- on "COURSE_BOOKING".user_id = "CREDIT_PURCHASE".user_id;
+
+    SELECT sum("CREDIT_PURCHASE".total) - count("COURSE_BOOKING".total) as remaining_credit
+    from 
+    (select user_id, sum(purchased_credits) as total from "CREDIT_PURCHASE" where user_id = (select id from "USER" where name = '王小明')group by user_id) as "CREDIT_PURCHASE"
+    inner join 
+    (select user_id, count(join_at) as total from "COURSE_BOOKING" where user_id = (select id from "USER" where name = '王小明') group by user_id) as "COURSE_BOOKING"
+    on  "CREDIT_PURCHASE".user_id = "COURSE_BOOKING".user_id;
 
 
 -- ████████  █████   █     ███  
