@@ -280,7 +280,7 @@ GROUP BY user_id ;
 --   █ █   █████ █   █     ███  
 -- ===================== ====================
 -- 6. 後台報表
--- 6-1 查詢：查詢專長為重訓的教練，並按經驗年數排序，由資深到資淺（需使用 VALUES 與 order by 語法)
+-- 6-1 查詢：查詢專長為重訓的教練，並按經驗年數排序，由資深到資淺（需使用 INNER JOIN 與 ORDER BY 語法)
 -- 顯示須包含以下欄位： 教練名稱 , 經驗年數, 專長名稱
    SELECT "USER".name AS 教練名稱 , "COACH".experience_years AS 經驗年數, "SKILL"."name" AS 專長名稱
    FROM (
@@ -290,15 +290,15 @@ GROUP BY user_id ;
    ON "COACH".id = "COACH_LINK_SKILL".coach_id 
 )INNER JOIN "SKILL" 
 ON "SKILL".id = "COACH_LINK_SKILL".skill_id 
-order by 經驗年數 ASc ;
--- 6-2 查詢：查詢每種專長的教練數量，並只列出教練數量最多的專長（需使用 GROUP BY, VALUES 與 order by 與 LIMIT 語法）
+ORDER BY 經驗年數 ASC ;
+-- 6-2 查詢：查詢每種專長的教練數量，並只列出教練數量最多的專長（需使用 GROUP BY, VALUES 與 ORDER BY 與 LIMIT 語法）
 -- 顯示須包含以下欄位： 專長名稱, coach_total
 SELECT "SKILL"."name" AS 專長名稱,count("COACH_LINK_SKILL".coach_id) AS coach_total
 FROM "COACH_LINK_SKILL" 
 INNER JOIN "SKILL"
 ON "SKILL".id = "COACH_LINK_SKILL".skill_id 
 GROUP BY 專長名稱 
-order by coach_total desc 
+ORDER BY coach_total desc 
 LIMIT 1;
 
 -- 6-3. 查詢：計算 11 月份組合包方案的銷售數量
