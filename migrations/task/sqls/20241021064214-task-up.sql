@@ -303,26 +303,26 @@ LIMIT 1;
 
 -- 6-3. 查詢：計算 11 月份組合包方案的銷售數量
 -- 顯示須包含以下欄位： 組合包方案名稱, 銷售數量
-SELECT name AS 組合包方案名稱, count(purchASe_at) AS 銷售數量
+SELECT name AS 組合包方案名稱, count(purchase_at) AS 銷售數量
 FROM "CREDIT_PACKAGE" 
 INNER JOIN "CREDIT_PURCHASE"
 ON "CREDIT_PURCHASE".credit_package_id = "CREDIT_PACKAGE".id 
-WHERE purchASe_at 
+WHERE purchase_at 
 BETWEEN '2024-11-01 00:00:00' AND '2024-11-30 23:59:59'
 GROUP BY name;
 
--- 6-4. 查詢：計算 11 月份總營收（使用 purchASe_at 欄位統計）
+-- 6-4. 查詢：計算 11 月份總營收（使用 purchase_at 欄位統計）
 -- 顯示須包含以下欄位： 總營收
 --A1:
-SELECT count(purchASe_at) AS 訂單數量, sum(price_paid) AS 總營收
+SELECT count(purchase_at) AS 訂單數量, sum(price_paid) AS 總營收
 FROM "CREDIT_PURCHASE" 
-WHERE purchASe_at 
+WHERE purchase_at 
 BETWEEN '2024-11-01 00:00:00' AND '2024-11-30 23:59:59';
 
 --A2(可計算，不合規定):
 SELECT sum(price_paid) AS 總營收
 FROM "CREDIT_PURCHASE"
-WHERE purchASe_at 
+WHERE purchase_at 
 BETWEEN '2024-11-01 00:00:00' AND '2024-11-30 23:59:59';
 
 -- 6-5. 查詢：計算 11 月份有預約課程的會員人數（需使用 Distinct，並用 created_at 和 status 欄位統計）
