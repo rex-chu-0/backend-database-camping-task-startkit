@@ -140,6 +140,11 @@ SET experience_years = 5
 WHERE user_id = (SELECT id FROM "USER" WHERE email='starplatinum@hexschooltest.io');
 
 -- 3-4 刪除：新增一個專長 空中瑜伽 至 SKILL 資料表，之後刪除此專長。
+INSERT INTO "SKILL" (name)
+VALUES ('空中瑜伽');
+
+DELETE FROM "SKILL"
+WHERE name = '空中瑜伽';
 
 
 --  ████████  █████   █    █   █ 
@@ -226,7 +231,7 @@ VALUES
 (
 (SELECT id FROM "USER" WHERE name = '王小明'),
 (SELECT id FROM "COURSE" WHERE user_id = (SELECT id FROM "USER" WHERE name ='李燕容')),
-'2024-11-27 17:10:25',
+'2024-11-24 17:10:25',
 '即將授課'
 );
 
@@ -265,7 +270,7 @@ GROUP BY user_id ;
     -- INNER JOIN ( 用戶王小明的已使用堂數) AS "COURSE_BOOKING"
     -- ON "COURSE_BOOKING".user_id = "CREDIT_PURCHASE".user_id;
 
-    SELECT sum("CREDIT_PURCHASE".total) - count("COURSE_BOOKING".total) AS remaining_credit
+    SELECT (SELECT id FROM "USER" WHERE name = '王小明') AS user_id, sum("CREDIT_PURCHASE".total) - count("COURSE_BOOKING".total) AS remaining_credit
     FROM 
     (SELECT user_id, sum(purchased_credits) AS total FROM "CREDIT_PURCHASE" WHERE user_id = (SELECT id FROM "USER" WHERE name = '王小明')GROUP BY user_id) AS "CREDIT_PURCHASE"
     INNER JOIN
@@ -290,7 +295,8 @@ GROUP BY user_id ;
    ON "COACH".id = "COACH_LINK_SKILL".coach_id 
 )INNER JOIN "SKILL" 
 ON "SKILL".id = "COACH_LINK_SKILL".skill_id 
-ORDER BY 經驗年數 ASC ;
+ORDER BY 經驗年數 DESC ;
+
 -- 6-2 查詢：查詢每種專長的教練數量，並只列出教練數量最多的專長（需使用 GROUP BY, VALUES 與 ORDER BY 與 LIMIT 語法）
 -- 顯示須包含以下欄位： 專長名稱, coach_total
 SELECT "SKILL"."name" AS 專長名稱,count("COACH_LINK_SKILL".coach_id) AS coach_total
@@ -327,7 +333,7 @@ BETWEEN '2024-11-01 00:00:00' AND '2024-11-30 23:59:59';
 
 -- 6-5. 查詢：計算 11 月份有預約課程的會員人數（需使用 Distinct，並用 created_at 和 status 欄位統計）
 -- 顯示須包含以下欄位： 預約會員人數
-SELECT DISTINCT count(user_id) 
+SELECT DISTINCT count(user_id) AS 預約會員人數
 FROM "COURSE_BOOKING"
 WHERE created_at 
 BETWEEN '2024-11-01 00:00:00' AND '2024-11-30 23:59:59'
