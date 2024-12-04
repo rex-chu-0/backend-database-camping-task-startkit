@@ -295,6 +295,7 @@ GROUP BY user_id ;
    ON "COACH".id = "COACH_LINK_SKILL".coach_id 
 )INNER JOIN "SKILL" 
 ON "SKILL".id = "COACH_LINK_SKILL".skill_id 
+WHERE "SKILL"."name"  ='重訓'
 ORDER BY 經驗年數 DESC ;
 
 -- 6-2 查詢：查詢每種專長的教練數量，並只列出教練數量最多的專長（需使用 GROUP BY, VALUES 與 ORDER BY 與 LIMIT 語法）
